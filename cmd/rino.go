@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	flag "github.com/spf13/pflag"
@@ -27,10 +28,19 @@ func main() {
 	if fInfo.Mode()&os.ModeNamedPipe == 0 {
 		errorf("Can only read from pipe")
 	}
+
+	//start reading
+	var reader io.Reader
+	if silent {
+		reader = os.Stdin
+	} else {
+		reader = io.TeeReader(os.Stdin, os.Stdout)
+	}
+	fmt.Println(reader)
 }
 
 func errorf(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, msg, args)
+	fmt.Fprintf(os.Stderr, msg+"\n", args)
 	os.Exit(2)
 }
 
