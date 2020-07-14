@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -36,11 +37,16 @@ func main() {
 	} else {
 		reader = io.TeeReader(os.Stdin, os.Stdout)
 	}
-	fmt.Println(reader)
+
+	var s = bufio.NewScanner(reader)
+	for s.Scan() {
+		line := s.Text()
+		fmt.Println(line)
+	}
 }
 
-func errorf(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, msg+"\n", args)
+func errorf(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, format+"\n", args)
 	os.Exit(2)
 }
 
