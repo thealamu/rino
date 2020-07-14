@@ -42,6 +42,7 @@ func main() {
 	if file == "" {
 		errorf("Have no file to write to, file flag required\n")
 	}
+
 	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0664)
 	if err != nil {
 		errorf("Could not open file for writing, %v\n", err)
@@ -49,11 +50,19 @@ func main() {
 	defer f.Close()
 	outFile := bufio.NewWriter(f)
 
+	//read and write, line by line
 	var s = bufio.NewScanner(reader)
 	for s.Scan() {
 		line := s.Text()
 		fmt.Fprintln(outFile, line)
 	}
+	outFile.Flush()
+
+	if err = s.Err(); err != nil {
+		errorf("Failure while scanning, %v\n", err)
+	}
+
+	//silence means ok!
 }
 
 func errorf(format string, args ...interface{}) {
