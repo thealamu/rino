@@ -23,14 +23,14 @@ func main() {
 	//check stdin is available for reading
 	fInfo, err := (os.Stdin.Stat())
 	if err != nil {
-		errorf("Can't stat standard input, %v", err)
+		errorf("Could not stat standard input, %v\n", err)
 	}
 	//check we have a pipe
 	if fInfo.Mode()&os.ModeNamedPipe == 0 {
-		errorf("Can only read from pipe")
+		errorf("Can only read from pipe\n")
 	}
 
-	//start reading
+	//prep for reading
 	var reader io.Reader
 	if silent {
 		reader = os.Stdin
@@ -38,15 +38,26 @@ func main() {
 		reader = io.TeeReader(os.Stdin, os.Stdout)
 	}
 
+	//prep file for writing
+	if file == "" {
+		errorf("Have no file to write to, file flag required\n")
+	}
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0664)
+	if err != nil {
+		errorf("Could not open file for writing, %v\n", err)
+	}
+	defer f.Close()
+	outFile := bufio.NewWriter(f)
+
 	var s = bufio.NewScanner(reader)
 	for s.Scan() {
 		line := s.Text()
-		fmt.Println(line)
+		fmt.Fprintln(outFile, line)
 	}
 }
 
 func errorf(format string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, format+"\n", args)
+	fmt.Fprintf(os.Stderr, format, args...)
 	os.Exit(2)
 }
 
